@@ -53,6 +53,12 @@ class Pair {
   U second() { return this->second_; }
 };
 
+enum CoroutineStatus {
+  iyield = 0,
+  iawait = 1,
+  ireturn = 2,
+};
+
 class SerialTerminal {
  private:
   Stream* io_stream;
@@ -115,31 +121,42 @@ class SerialTerminal {
 #endif
     if (!io_stream->available()) return;
     bool commandComplete = false;
+    static CoroutineStatus next_action = CoroutineStatus::iyield;
     while (io_stream->available()) {
       char car = io_stream->read();
-      if (car == 127 && this->message.length() > 0) {
-        io_stream->print("\e[1D");
-        io_stream->print(' ');
-        io_stream->print("\e[1D");
-        this->message.remove(this->message.length() - 1);
-        continue;
-      }
-      if (isAscii(car)) io_stream->print(car);
-      // Check if user ended the line
-      if (car == '\r') {
-        io_stream->print("\r\n");
-        commandComplete = true;
-        // If there are more data on the line, drop a \n, if it is
-        // there. Some terminals may send both, giving
-        // an extra lineend, if we do not drop it.
-        if (io_stream->available() && io_stream->peek() == '\n') {
+      switch (car) {
+        case char(8):
+        case char(127):
+          if (this->message.length() > 0) {
+            io_stream->print("\b \b");
+            this->message.remove(this->message.length() - 1);
+          }
+          next_action = CoroutineStatus::iawait;
+          break;
+        case '\r':
+          io_stream->print("\r\n");
+          commandComplete = true;
+          // If there are more data on the line, drop a \n, if it is
+          // there. Some terminals may send both, giving
+          // an extra lineend, if we do not drop it.
+          if (io_stream->available() && io_stream->peek() == '\n') {
+            io_stream->read();
+          }
+          io_stream->flush();
           io_stream->read();
-        }
-        io_stream->flush();
-        io_stream->read();
+          next_action = CoroutineStatus::ireturn;
+          break;
+        default:
+          if (isAscii(car)) io_stream->print(car);
+          next_action = CoroutineStatus::iyield;
+      }
+      if (next_action == CoroutineStatus::iyield) {
+        this->message += car;
+      } else if (next_action == CoroutineStatus::iawait) {
+        continue;
+      } else if (next_action == CoroutineStatus::ireturn) {
         break;
       }
-      this->message += car;
     }
 
     if (!commandComplete) return;
@@ -183,19 +200,7 @@ class SerialTerminal {
   }
 
   static String ParseArgument(String message) {
-    String keyword = "";
-    for (auto& car : message) {
-      if (car == '"') break;
-      keyword += car;
-    }
-    if (keyword != "") message.remove(0, keyword.length());
     message.trim();
-    int msg_len = message.length();
-    if (msg_len > 0) {
-      message.remove(0, 1);
-      message.remove(msg_len - 2);
-    }
-
     return message;
   }
 };
