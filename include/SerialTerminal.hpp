@@ -40,19 +40,6 @@ struct Command {
       : command(command), callback(callback), description(description) {}
 };
 
-template <typename T, typename U>
-class Pair {
- private:
-  T first_;
-  U second_;
-
- public:
-  Pair(T first, U second) : first_(first), second_(second) {}
-  T first() { return this->first_; }
-
-  U second() { return this->second_; }
-};
-
 enum CoroutineStatus {
   iyield = 0,
   iawait = 1,
@@ -168,17 +155,18 @@ class SerialTerminal {
       return;
     }
 
-    Pair<String, String> command = SerialTerminal::ParseCommand(this->message);
+    std::pair<String, String> command =
+        SerialTerminal::ParseCommand(this->message);
     this->message = "";
     bool found = false;
     for (uint8_t i = 0; i < this->size_; i++) {
-      if (this->commands[i]->command == command.first()) {
-        this->commands[i]->callback(command.second());
+      if (this->commands[i]->command == command.first) {
+        this->commands[i]->callback(command.second);
         found = true;
       }
     }
     if (!found) {
-      io_stream->print("\n" + command.first());
+      io_stream->print("\n" + command.first);
       io_stream->println(": command not found");
     }
 #ifndef ST_FLAG_NOPROMPT
@@ -186,7 +174,7 @@ class SerialTerminal {
 #endif
   }
 
-  static Pair<String, String> ParseCommand(String message) {
+  static std::pair<String, String> ParseCommand(String message) {
     String keyword = "";
     for (auto& car : message) {
       if (car == ' ') break;
@@ -196,7 +184,7 @@ class SerialTerminal {
     keyword.trim();
     message.trim();
 
-    return Pair<String, String>(keyword, message);
+    return std::pair<String, String>(keyword, message);
   }
 
   static String ParseArgument(String message) {

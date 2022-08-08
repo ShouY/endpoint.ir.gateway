@@ -33,10 +33,10 @@ maschinendeck::SerialTerminal Terminal;
  * User defined commands. Example: suspend, blink, reboot, etc.
  ********************************************************************/
 void blink(String opts) {
-  maschinendeck::Pair<String, String> operands =
+  std::pair<String, String> operands =
       maschinendeck::SerialTerminal::ParseCommand(opts);
-  int times = operands.first().toInt();
-  int miliseconds = operands.second().toInt();
+  int times = operands.first.toInt();
+  int miliseconds = operands.second.toInt();
   for (int i = 0; i < times; i++) {
     // M5.dis.fillpix(0xaaff00);  // set LED to green
     digitalWrite(LED_BUILTIN, LED_BRIGHTNESS);
