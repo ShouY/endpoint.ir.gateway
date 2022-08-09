@@ -25,6 +25,7 @@
 #include <PubSubClient.h>
 #include <WiFi.h>
 
+#include "ESP32WifiCLI.hpp"
 #include "SerialTerminal.hpp"
 
 maschinendeck::SerialTerminal Terminal;
