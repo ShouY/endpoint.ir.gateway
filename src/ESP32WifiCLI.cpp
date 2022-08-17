@@ -391,11 +391,11 @@ void _setMode(String opts) {
 
 void ESP32WifiCLI::begin(Stream* stream, String app) {
   app_name = app.length() == 0 ? "wifi_cli_prefs" : app;
-  WiFi.mode(WIFI_STA);
-  loadSavedNetworks();
-  loadAP(getDefaultAP());
-  reconnect();
-  delay(10);
+  // WiFi.mode(WIFI_STA);
+  // loadSavedNetworks();
+  // loadAP(getDefaultAP());
+  // reconnect();
+  // delay(10);
   term = new maschinendeck::SerialTerminal(stream);
   term->add("help", &_printHelp, "\tshow detail usage information");
   term->add("setSSID", &_setSSID, "\tset the Wifi SSID");

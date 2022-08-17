@@ -38,4 +38,4 @@ class Terminal {
 
 }  // namespace my
 
-#endif TERMINAL_CONTEXT_HPP
+#endif  // TERMINAL_CONTEXT_HPP

@@ -18,10 +18,9 @@
  along with this program. If not, see <http://www.gnu.org/licenses/>.
  *********************************************************************/
 
-#include <Arduino.h>
-// #include <M5Atom.h>
+// #define NO_GLOBAL_ESP32WIFICLI
 
-// #include <AsyncTCP.h>
+#include <Arduino.h>
 #include <PubSubClient.h>
 #include <WiFi.h>
 
@@ -29,6 +28,7 @@
 #include "SerialTerminal.hpp"
 
 maschinendeck::SerialTerminal Terminal;
+PubSubClient PSCli;
 
 /*********************************************************************
  * User defined commands. Example: suspend, blink, reboot, etc.
@@ -55,21 +55,43 @@ void echo(String opts) {
 
 void reboot(String opts) { ESP.restart(); }
 
-void setup() {
-  pinMode(LED_BUILTIN, OUTPUT);
+void connectDefaultNetwork(Stream& stream) {
+  wcli.begin(&stream);
+  wcli.setSSID("TP-LINK_0BFD");
+  wcli.setPASW("qwertyui");
+  wcli.connect();
+  wcli.begin(nullptr);
+}
 
-  Terminal.add("echo", echo, "echo parameters");
-  Terminal.add("reboot", reboot, "reboot MCU");
-  Terminal.add("blink", blink, "blink");
+void setup() {
+  //   pinMode(LED_BUILTIN, OUTPUT);
+
+  //   Terminal.add("echo", echo, "echo parameters");
+  //   Terminal.add("reboot", reboot, "reboot MCU");
+  //   Terminal.add("blink", blink, "blink");
 
   Serial.begin(115200);
-  Terminal.init(&Serial);
-  while (!Terminal.is_open()) {
-    delay(100);
-  }
+  //   // Terminal.init(&Serial);
+  //   // while (!Terminal.is_open()) {
+  //   //   delay(100);
+  //   // }
+  // wcli.begin(&Serial, String("WiFi CLI"));
+
+  // WiFi.begin("TP-LINK_0BFD", "qwertyui");
+  // Serial.print("connecting");
+  // while (!WiFi.isConnected()) {
+  //   Serial.print(".");
+  //   delay(200);
+  // }
+  // Serial.println();
+  connectDefaultNetwork(Serial);
+  wcli.setMode("single");
+  wcli.begin(&Serial);
 }
 
 void loop() {
   // Terminla loop
-  Terminal.loop();
+  // Terminal.loop();
+  wcli.loop();
+  // delay(100);
 }
