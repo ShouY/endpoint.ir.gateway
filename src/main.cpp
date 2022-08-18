@@ -25,50 +25,19 @@
 #include <PubSubClient.h>
 #include <WiFi.h>
 
-#include "ESP32WifiCLI.hpp"
 #include "SerialTerminal.hpp"
+#include "modules/network.hpp"
+#include "terminal_command/basic.hpp"
+#include "terminal_command/network.hpp"
+
+using namespace my::arduino;
 
 maschinendeck::SerialTerminal Terminal;
 PubSubClient PSCli;
 
-Stream& getDefaultStream() { return Serial; }
-
 /*********************************************************************
  * User defined commands. Example: suspend, blink, reboot, etc.
  ********************************************************************/
-void blink(String opts) {
-  std::pair<String, String> operands =
-      maschinendeck::SerialTerminal::ParseCommand(opts);
-  int times = operands.first.toInt();
-  int miliseconds = operands.second.toInt();
-  for (int i = 0; i < times; i++) {
-    digitalWrite(LED_BUILTIN, LED_BRIGHTNESS);
-    delay(miliseconds);
-    digitalWrite(LED_BUILTIN, LOW);
-    delay(miliseconds);
-  }
-}
-
-void echo(String opts) {
-  String echo = maschinendeck::SerialTerminal::ParseArgument(opts);
-  Serial.println("\r\nmsg: " + echo);
-}
-
-void reboot(String opts) { ESP.restart(); }
-
-void connectDefaultNetwork(Stream& stream) {
-  wcli.begin(&stream);
-  wcli.setSSID("TP-LINK_0BFD");
-  wcli.setPASW("qwertyui");
-  wcli.connect();
-  wcli.begin(nullptr);
-}
-
-void netstat(String opt) {
-  wcli.begin(&getDefaultStream());
-  wcli.status();
-  wcli.begin(nullptr);
-}
 
 void setup() {
   // 初始化固件
@@ -77,10 +46,10 @@ void setup() {
   delay(100);
 
   // 设置终端
-  Terminal.add("echo", echo, "echo parameters");
-  Terminal.add("reboot", reboot, "reboot MCU");
-  Terminal.add("blink", blink, "blink");
-  Terminal.add("netstat", netstat, "show WiFi connect status");
+  Terminal.add("echo", terminal_command::echo, "echo parameters");
+  Terminal.add("reboot", terminal_command::reboot, "reboot MCU");
+  Terminal.add("blink", terminal_command::blink, "blink onboard LED");
+  Terminal.add("netstat", terminal_command::netstat, "show network status");
 
   Terminal.init(&Serial);
   getDefaultStream().println("Terminal start finish");
