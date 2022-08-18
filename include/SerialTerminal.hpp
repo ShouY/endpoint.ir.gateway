@@ -73,14 +73,14 @@ class SerialTerminal {
     this->add("eeprom", &printEEPROM, "prints the contents of EEPROM");
 #endif
 
-#ifndef ST_FLAG_NOHELP
-    if (io_stream) {
-      io_stream->print("SerialTerm v" ST_VERSION);
-      io_stream->print("\r\n");
-      io_stream->println("(C) 2022, MikO - Hpsaturn");
-      io_stream->println("  available commands:");
-    }
-#endif
+    // #ifndef ST_FLAG_NOHELP
+    //     if (io_stream) {
+    //       io_stream->print("SerialTerm v" ST_VERSION);
+    //       io_stream->print("\r\n");
+    //       io_stream->println("(C) 2022, MikO - Hpsaturn");
+    //       io_stream->println("  available commands:");
+    //     }
+    // #endif
   }
 
   void init(Stream* io) { io_stream = io; }

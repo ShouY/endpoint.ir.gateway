@@ -19,6 +19,7 @@
  *********************************************************************/
 
 // #define NO_GLOBAL_ESP32WIFICLI
+#define ST_FLAG_NOHELP
 
 #include <Arduino.h>
 #include <PubSubClient.h>
@@ -29,6 +30,8 @@
 
 maschinendeck::SerialTerminal Terminal;
 PubSubClient PSCli;
+
+Stream& getDefaultStream() { return Serial; }
 
 /*********************************************************************
  * User defined commands. Example: suspend, blink, reboot, etc.
@@ -63,35 +66,34 @@ void connectDefaultNetwork(Stream& stream) {
   wcli.begin(nullptr);
 }
 
-void setup() {
-  //   pinMode(LED_BUILTIN, OUTPUT);
+void netstat(String opt) {
+  wcli.begin(&getDefaultStream());
+  wcli.status();
+  wcli.begin(nullptr);
+}
 
-  //   Terminal.add("echo", echo, "echo parameters");
-  //   Terminal.add("reboot", reboot, "reboot MCU");
-  //   Terminal.add("blink", blink, "blink");
+void setup() {
+  pinMode(LED_BUILTIN, OUTPUT);
 
   Serial.begin(115200);
-  //   // Terminal.init(&Serial);
-  //   // while (!Terminal.is_open()) {
-  //   //   delay(100);
-  //   // }
-  // wcli.begin(&Serial, String("WiFi CLI"));
+  delay(100);
 
-  // WiFi.begin("TP-LINK_0BFD", "qwertyui");
-  // Serial.print("connecting");
-  // while (!WiFi.isConnected()) {
-  //   Serial.print(".");
-  //   delay(200);
-  // }
-  // Serial.println();
-  connectDefaultNetwork(Serial);
-  wcli.setMode("single");
-  wcli.begin(&Serial);
+  Terminal.add("echo", echo, "echo parameters");
+  Terminal.add("reboot", reboot, "reboot MCU");
+  Terminal.add("blink", blink, "blink");
+  Terminal.add("netstat", netstat, "show WiFi connect status");
+
+  Terminal.init(&Serial);
+  getDefaultStream().println("Terminal start finish");
+
+  // wcli.setMode("single");
+  // wcli.begin(&Serial);
+  connectDefaultNetwork(getDefaultStream());
 }
 
 void loop() {
   // Terminla loop
-  // Terminal.loop();
-  wcli.loop();
+  Terminal.loop();
+  // wcli.loop();
   // delay(100);
 }

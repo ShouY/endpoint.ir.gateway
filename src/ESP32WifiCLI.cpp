@@ -11,7 +11,7 @@ void ESP32WifiCLI::printWifiStatus() {
   Serial.println(WiFi.macAddress());  // Output MAC address.
   Serial.print("Hostname \t: ");
   Serial.println(WiFi.getHostname());  // Output hostname.
-  Serial.println("");
+  // Serial.println("");
 }
 
 void ESP32WifiCLI::printHelp() {
@@ -86,6 +86,9 @@ void ESP32WifiCLI::loadSavedNetworks(bool addAP) {
 void ESP32WifiCLI::list() { loadSavedNetworks(false); }
 
 bool ESP32WifiCLI::isSSIDSaved(String ssid) {
+  // NOTE: 不保存SSID和密码
+  return false;
+
   cfg.begin(app_name.c_str(), RO_MODE);
   bool isSaved = false;
   int net = 1;
@@ -199,10 +202,11 @@ void ESP32WifiCLI::wifiAPConnect(bool save) {
     delay(1000);
     Serial.print(".");
   }
+  Serial.println();
   delay(100);
-  if (wifiValidation() && save) {
-    saveNetwork(temp_ssid, temp_pasw);
-  }
+  // if (wifiValidation() && save) {
+  //   saveNetwork(temp_ssid, temp_pasw);
+  // }
 }
 
 bool ESP32WifiCLI::isConfigured() {
