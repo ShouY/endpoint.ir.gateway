@@ -42,10 +42,8 @@ void blink(String opts) {
   int times = operands.first.toInt();
   int miliseconds = operands.second.toInt();
   for (int i = 0; i < times; i++) {
-    // M5.dis.fillpix(0xaaff00);  // set LED to green
     digitalWrite(LED_BUILTIN, LED_BRIGHTNESS);
     delay(miliseconds);
-    // M5.dis.fillpix(0xff0000);  // set LED to green
     digitalWrite(LED_BUILTIN, LOW);
     delay(miliseconds);
   }
@@ -73,11 +71,12 @@ void netstat(String opt) {
 }
 
 void setup() {
+  // 初始化固件
   pinMode(LED_BUILTIN, OUTPUT);
-
   Serial.begin(115200);
   delay(100);
 
+  // 设置终端
   Terminal.add("echo", echo, "echo parameters");
   Terminal.add("reboot", reboot, "reboot MCU");
   Terminal.add("blink", blink, "blink");
@@ -86,14 +85,11 @@ void setup() {
   Terminal.init(&Serial);
   getDefaultStream().println("Terminal start finish");
 
-  // wcli.setMode("single");
-  // wcli.begin(&Serial);
+  // 默认连接网络
   connectDefaultNetwork(getDefaultStream());
 }
 
 void loop() {
   // Terminla loop
   Terminal.loop();
-  // wcli.loop();
-  // delay(100);
 }

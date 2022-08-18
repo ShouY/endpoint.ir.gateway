@@ -4,6 +4,8 @@
 
 #include <Arduino.h>
 
+#define MAX_TERMINAL_COMMAND_SIZE 256
+
 namespace maschinendeck {
 
 #if not defined ST_FLAG_NOBUILTIN && defined E2END
@@ -49,7 +51,7 @@ enum CoroutineStatus {
 class SerialTerminal {
  private:
   Stream* io_stream;
-  Command* commands[256];
+  Command* commands[MAX_TERMINAL_COMMAND_SIZE];
   uint8_t size_;
   bool firstRun;
   String message;
@@ -87,11 +89,21 @@ class SerialTerminal {
 
   bool is_open() const { return io_stream && io_stream->availableForWrite(); }
 
-  void add(String command, void (*callback)(String param),
-           String description = "") {
-    if (this->size_ >= 64) return;
+  // Add command to terminal.
+  //
+  // return 0 if add success, -1 when command size is full, -2 is command is
+  // existed.
+  int add(String command, void (*callback)(String param),
+          String description = "") {
+    if (this->size_ >= MAX_TERMINAL_COMMAND_SIZE) return -1;
+    for (int i = 0; i < this->size_; ++i) {
+      if (this->commands[i]->command == command) {
+        return -2;
+      }
+    }
     this->commands[this->size_] = new Command(command, callback, description);
     this->size_++;
+    return 0;
   }
 
   uint8_t size() { return this->size_ + 1; }
