@@ -27,6 +27,16 @@ void echo(String opts) {
 }
 
 void reboot(String opts) { ESP.restart(); }
+
+void serialEcho(String opts) {
+  Serial1.print("[S1]:");
+  Serial1.println(opts);
+  char buf[1024]{};
+  String recv = Serial1.readString();
+  Serial.printf("msg:[%d]", recv.length());
+  Serial.println(recv);
+}
+
 }  // namespace terminal_command
 }  // namespace arduino
 }  // namespace my

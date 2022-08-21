@@ -43,6 +43,7 @@ void setup() {
   // 初始化固件
   pinMode(LED_BUILTIN, OUTPUT);
   Serial.begin(115200);
+  Serial1.begin(9600);
   delay(100);
 
   // 设置终端
@@ -50,6 +51,7 @@ void setup() {
   Terminal.add("reboot", terminal_command::reboot, "reboot MCU");
   Terminal.add("blink", terminal_command::blink, "blink onboard LED");
   Terminal.add("netstat", terminal_command::netstat, "show network status");
+  Terminal.add("secho1", terminal_command::serialEcho, "echo proxy of serial1");
 
   Terminal.init(&Serial);
   getDefaultStream().println("Terminal start finish");
