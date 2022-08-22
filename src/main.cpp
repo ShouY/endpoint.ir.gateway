@@ -54,6 +54,9 @@ void setup() {
   Terminal.add("netstat", terminal_command::netstat, "show network status");
   Terminal.add("secho1", terminal_command::serialEcho, "echo proxy of serial1");
   Terminal.add("emit", terminal_command::remote_emit, "send IR signal");
+  Terminal.add("learn", terminal_command::remote_learn, "laearn IR signal");
+  Terminal.add("ir_status", terminal_command::remote_status,
+               "show IR used status");
 
   Terminal.init(&Serial);
   getDefaultStream().println("Terminal start finish");

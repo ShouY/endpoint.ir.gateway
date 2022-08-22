@@ -39,7 +39,7 @@ class IRControllor {
  public:
   IRControllor(Print* logger = nullptr) : retry_times_(2), logger_(logger) {}
 
-  bool learn(String actionName, uint8_t code) {
+  bool learn(uint8_t code) {
     auto respLen = sendCmd(CMD_LEARN, code);
     return respLen == 1 && recv_buf_[RESPONSE_OFFSET] == CMD_SUCCESS;
   }
@@ -55,6 +55,7 @@ class IRControllor {
       return false;
     }
     auto respLen = sendCmd(CMD_STATUS, 0x00);
+    Serial.printf("status resp len=%d\n", respLen);
     if (respLen != 8) {
       return false;
     }
@@ -109,7 +110,7 @@ class IRControllor {
     {
       int recv_timeout_ms = 1000;
       int len = 5;
-      if (operate == CMD_LEARN) {
+      if (operate == CMD_STATUS) {
         recv_timeout_ms = 20500;  // 学习有20s的超时时间
         len = 12;
       }
