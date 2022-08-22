@@ -28,6 +28,7 @@
 #include "SerialTerminal.hpp"
 #include "modules/network.hpp"
 #include "terminal_command/basic.hpp"
+#include "terminal_command/ir_gateway.hpp"
 #include "terminal_command/network.hpp"
 
 using namespace my::arduino;
@@ -52,6 +53,7 @@ void setup() {
   Terminal.add("blink", terminal_command::blink, "blink onboard LED");
   Terminal.add("netstat", terminal_command::netstat, "show network status");
   Terminal.add("secho1", terminal_command::serialEcho, "echo proxy of serial1");
+  Terminal.add("emit", terminal_command::remote_emit, "send IR signal");
 
   Terminal.init(&Serial);
   getDefaultStream().println("Terminal start finish");

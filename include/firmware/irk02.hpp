@@ -34,19 +34,19 @@ class IRControllor {
 
   // 响应信息在返回报文中的起始位置偏移
   static constexpr uint8_t RESPONSE_OFFSET = 3;
-  static constexpr char cmd_success = 0x01;
+  static constexpr char CMD_SUCCESS = 0x01;
 
  public:
   IRControllor(Print* logger = nullptr) : retry_times_(2), logger_(logger) {}
 
   bool learn(String actionName, uint8_t code) {
     auto respLen = sendCmd(CMD_LEARN, code);
-    return respLen == 1 && recv_buf_[RESPONSE_OFFSET] == cmd_success;
+    return respLen == 1 && recv_buf_[RESPONSE_OFFSET] == CMD_SUCCESS;
   }
 
   bool emit(uint8_t code) {
     auto respLen = sendCmd(CMD_EMIT, code);
-    return respLen == 1 && recv_buf_[RESPONSE_OFFSET] == cmd_success;
+    return respLen == 1 && recv_buf_[RESPONSE_OFFSET] == CMD_SUCCESS;
   }
 
   // 查看key是否已经占用
@@ -96,50 +96,46 @@ class IRControllor {
     cmd[cmd_len - 1] = std::accumulate(cmd, cmd + cmd_len - 1, uint8_t(0));
 
     // send
-    Serial.setTimeout(1000);
+    Serial1.setTimeout(200);
     for (int i = 0; i < retry_times_; ++i) {
-      auto sendLen = Serial.write(cmd, cmd_len);
+      auto sendLen = Serial1.write(cmd, cmd_len);
       if (sendLen == cmd_len) {
         break;
       }
     }
 
     // recv
-    int len;
+    int expect_len = 0;
     {
       int recv_timeout_ms = 1000;
-      int expect_len = 5;
+      int len = 5;
       if (operate == CMD_LEARN) {
         recv_timeout_ms = 20500;  // 学习有20s的超时时间
-        expect_len = 12;
+        len = 12;
       }
-      len = expect_len;
+      expect_len = len;
 
-      // Serial.setTimeout(recv_timeout_ms);
-      char* buf_ = recv_buf_;
-      for (int i = 0; expect_len && i < retry_times_; ++i) {
-        auto recv_len = Serial.readBytes(buf_, expect_len);
-        // Serial.setTimeout(1000);  // reset timeout
-        buf_ += recv_len;
-        expect_len -= recv_len;
-      }
-      if (expect_len > 0) {
+      char* buf_end = recv_buf_;
+      // for (int i = 0; expect_len && i < retry_times_; ++i) {
+      auto recv_len = Serial1.readBytes(buf_end, len);
+      buf_end += recv_len;
+      len -= recv_len;
+      // }
+      if (len > 0) {
         return -3;
       }
 
       // check resp
       int checksum = std::accumulate(recv_buf_, recv_buf_ + expect_len - 1, 0);
-      if (checksum != recv_buf_[len - 1]) {
-        return -3;
+      checksum &= 0xFF;
+      if (checksum != recv_buf_[expect_len - 1]) {
+        return -4;
       }
       if (memcmp(cmd, recv_buf_, 3) != 0) {
-        return -3;
-      }
-      if (operate != CMD_LEARN && recv_buf_[3] != cmd_success) {
-        return -3;
+        return -5;
       }
     }
-    return len - 4;  // 去除header、operate和checksum
+    return expect_len - 4;  // 去除header、operate和checksum
   }
 
   int retry_times_;
