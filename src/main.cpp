@@ -22,19 +22,18 @@
 #define ST_FLAG_NOHELP
 
 #include <Arduino.h>
-#include <PubSubClient.h>
 #include <WiFi.h>
 
 #include "SerialTerminal.hpp"
 #include "modules/network.hpp"
 #include "terminal_command/basic.hpp"
 #include "terminal_command/ir_gateway.hpp"
+#include "terminal_command/mqtt.hpp"
 #include "terminal_command/network.hpp"
 
 using namespace my::arduino;
 
 maschinendeck::SerialTerminal Terminal;
-PubSubClient PSCli;
 
 /*********************************************************************
  * User defined commands. Example: suspend, blink, reboot, etc.
@@ -57,6 +56,9 @@ void setup() {
   Terminal.add("learn", terminal_command::remote_learn, "laearn IR signal");
   Terminal.add("ir_status", terminal_command::remote_status,
                "show IR used status");
+  Terminal.add("mqtt_connect", terminal_command::mqtt_connect,
+               "connect to mqtt server");
+  Terminal.add("publish", terminal_command::mqtt_public, "publish to server");
 
   Terminal.init(&Serial);
   getDefaultStream().println("Terminal start finish");
