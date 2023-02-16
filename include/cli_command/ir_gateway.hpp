@@ -8,7 +8,7 @@ namespace my {
 namespace arduino {
 namespace terminal_command {
 
-static IRControllor IRCtrl;
+static typename firmware::controller::IRControllor IRCtrl;
 
 void remote_emit(String opts) {
   auto key = opts.toInt();

@@ -6,7 +6,9 @@
 namespace my {
 namespace arduino {
 
-Stream& getDefaultStream() { return Serial; }
+Stream& defaultStream();
+
+void connectDefaultNetwork(Stream& stream);
 
 }  // namespace arduino
 }  // namespace my

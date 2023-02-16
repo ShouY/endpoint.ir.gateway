@@ -24,20 +24,38 @@
 #include <Arduino.h>
 #include <WiFi.h>
 
+#define LED_BRIGHTNESS 255
+
+#include <nvs_flash.h>
+
 #include "SerialTerminal.hpp"
-#include "modules/network.hpp"
-#include "terminal_command/basic.hpp"
-#include "terminal_command/ir_gateway.hpp"
-#include "terminal_command/mqtt.hpp"
-#include "terminal_command/network.hpp"
+#include "cli_command/basic.hpp"
+#include "cli_command/ir_gateway.hpp"
+#include "cli_command/mqtt.hpp"
+#include "cli_command/network.hpp"
 
 using namespace my::arduino;
 
 maschinendeck::SerialTerminal Terminal;
 
-/*********************************************************************
- * User defined commands. Example: suspend, blink, reboot, etc.
- ********************************************************************/
+void initMainCli() {
+  // 设置终端
+  Terminal.add("echo", terminal_command::echo, "echo parameters");
+  Terminal.add("reboot", terminal_command::reboot, "reboot MCU");
+  // Terminal.add("blink", terminal_command::blink, "blink onboard LED");
+  Terminal.add("netstat", terminal_command::netstat, "show network status");
+  // Terminal.add("secho1", terminal_command::serialEcho, "echo proxy of
+  // serial1");
+  Terminal.add("emit", terminal_command::remote_emit, "send IR signal ");
+  Terminal.add("learn", terminal_command::remote_learn, " laearn IR signal");
+  Terminal.add("ir_status", terminal_command::remote_status,
+               "show IR used status");
+  Terminal.add("mqtt_connect", terminal_command::mqtt_connect,
+               "connect to mqtt server");
+  Terminal.add("publish", terminal_command::mqtt_public,
+               "publish message to server");
+  Terminal.init(&Serial);
+}
 
 void setup() {
   // 初始化固件
@@ -46,25 +64,23 @@ void setup() {
   Serial1.begin(9600);
   delay(100);
 
-  // 设置终端
-  Terminal.add("echo", terminal_command::echo, "echo parameters");
-  Terminal.add("reboot", terminal_command::reboot, "reboot MCU");
-  Terminal.add("blink", terminal_command::blink, "blink onboard LED");
-  Terminal.add("netstat", terminal_command::netstat, "show network status");
-  Terminal.add("secho1", terminal_command::serialEcho, "echo proxy of serial1");
-  Terminal.add("emit", terminal_command::remote_emit, "send IR signal");
-  Terminal.add("learn", terminal_command::remote_learn, "laearn IR signal");
-  Terminal.add("ir_status", terminal_command::remote_status,
-               "show IR used status");
-  Terminal.add("mqtt_connect", terminal_command::mqtt_connect,
-               "connect to mqtt server");
-  Terminal.add("publish", terminal_command::mqtt_public, "publish to server");
+  // Initialize NVS
+  esp_err_t err = nvs_flash_init();
+  if (err == ESP_ERR_NVS_NO_FREE_PAGES ||
+      err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+    // NVS partition was truncated and needs to be erased
+    // Retry nvs_flash_init
+    ESP_ERROR_CHECK(nvs_flash_erase());
+    err = nvs_flash_init();
+  }
+  ESP_ERROR_CHECK(err);
+  defaultStream().printf("nvs init result: %d\n", err);
 
-  Terminal.init(&Serial);
-  getDefaultStream().println("Terminal start finish");
+  initMainCli();
+  defaultStream().println("Terminal init finish");
 
   // 默认连接网络
-  connectDefaultNetwork(getDefaultStream());
+  connectDefaultNetwork(defaultStream());
 }
 
 void loop() {

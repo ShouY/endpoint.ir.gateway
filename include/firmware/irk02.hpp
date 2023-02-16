@@ -11,7 +11,8 @@
 #include <string>
 
 namespace my {
-namespace arduino {
+namespace firmware {
+namespace controller {
 
 class IRControllor {
   static constexpr char HEADER0 = 0x55;
@@ -145,5 +146,6 @@ class IRControllor {
   String key_names_[KEY_INVALID];
 };
 
-}  // namespace arduino
+}  // namespace controller
+}  // namespace firmware
 }  // namespace my

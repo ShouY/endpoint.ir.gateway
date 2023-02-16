@@ -1,5 +1,7 @@
 #include "ESP32WifiCLI.hpp"
 
+#include "common.hpp"
+
 void ESP32WifiCLI::printWifiStatus() {
   Serial.print("\nWiFi SSID \t: [");
   Serial.println(WiFi.SSID() + "]");  // Output Network name.
@@ -291,18 +293,26 @@ void ESP32WifiCLI::reconnect() {
 }
 
 void ESP32WifiCLI::connect() {
-  if (WiFi.status() == WL_CONNECTED && temp_ssid == WiFi.SSID()) {
+  auto ssid = WiFi.SSID();
+  auto status = WiFi.status();
+  my::arduino::defaultStream().printf("WiFi status: %d, connected ssid = %s\n",
+                                      status, ssid);
+  if (status == WL_CONNECTED && temp_ssid == ssid) {
     Serial.println("\nWiFi is already connected");
     return;
-  } else if (WiFi.status() == WL_CONNECTED) {
+  } else if (status == WL_CONNECTED) {
+    my::arduino::defaultStream().printf("WiFi disconnect\n");
     disconnect();
     delay(1000);
   }
-  if (getMode().equals("single")) {
+  auto mode = getMode();
+  Serial.printf("wifi mode: %s\n", mode);
+  if (mode.equals("single")) {
     if (temp_ssid.length() == 0) {
       Serial.println("\nSSID is empty, please set a valid SSID into quotes\n");
       return;
     }
+    my::arduino::defaultStream().printf("Ap connect");
     if (isSSIDSaved(temp_ssid)) {
       wifiAPConnect(false);
       return;
