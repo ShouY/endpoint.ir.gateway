@@ -2,17 +2,17 @@
 
 #include "common.hpp"
 
-void ESP32WifiCLI::printWifiStatus() {
-  Serial.print("\nWiFi SSID \t: [");
-  Serial.println(WiFi.SSID() + "]");  // Output Network name.
-  Serial.print("IP address  \t: ");
-  Serial.println(WiFi.localIP());  // Output IP Address.
-  Serial.print("RSSI signal \t: ");
-  Serial.println(WiFi.RSSI());  // Output signal strength.
-  Serial.print("MAC Address\t: ");
-  Serial.println(WiFi.macAddress());  // Output MAC address.
-  Serial.print("Hostname \t: ");
-  Serial.println(WiFi.getHostname());  // Output hostname.
+void ESP32WifiCLI::printWifiStatus(Stream& out) {
+  out.print("\nWiFi SSID \t: [");
+  out.println(WiFi.SSID() + "]");  // Output Network name.
+  out.print("IP address  \t: ");
+  out.println(WiFi.localIP());  // Output IP Address.
+  out.print("RSSI signal \t: ");
+  out.println(WiFi.RSSI());  // Output signal strength.
+  out.print("MAC Address\t: ");
+  out.println(WiFi.macAddress());  // Output MAC address.
+  out.print("Hostname \t: ");
+  out.println(WiFi.getHostname());  // Output hostname.
   // Serial.println("");
 }
 
@@ -51,9 +51,9 @@ void ESP32WifiCLI::scan() {
   }
 }
 
-void ESP32WifiCLI::status() {
+void ESP32WifiCLI::status(Stream& out) {
   if (WiFi.status() == WL_CONNECTED) {
-    printWifiStatus();
+    printWifiStatus(out);
   } else {
     Serial.println("\nWiFi is not connected");
   }
@@ -164,15 +164,10 @@ void ESP32WifiCLI::setSSID(String ssid) {
   temp_ssid = ssid;
   if (temp_ssid.length() == 0) {
     Serial.println("\nSSID is empty, please set a valid SSID into quotes");
-  } else {
-    Serial.println("\nset ssid to: " + temp_ssid);
   }
 }
 
-void ESP32WifiCLI::setPASW(String pasw) {
-  temp_pasw = pasw;
-  Serial.println("\nset password to: " + temp_pasw);
-}
+void ESP32WifiCLI::setPASW(String pasw) { temp_pasw = pasw; }
 
 void ESP32WifiCLI::disconnect() {
   Serial.println("\nDisconnecting...");
@@ -181,11 +176,11 @@ void ESP32WifiCLI::disconnect() {
 
 bool ESP32WifiCLI::wifiValidation() {
   if (WiFi.status() == WL_CONNECTED) {
-    Serial.println("connected!");
-    if (!silent) status();
+    if (!silent) {
+      status(::my::arduino::defaultStream());
+    }
     return true;
   } else {
-    Serial.println("connection failed!");
     return false;
   }
 }
@@ -195,7 +190,8 @@ void ESP32WifiCLI::wifiAPConnect(bool save) {
     Serial.println("\nSSID is empty, please set a valid SSID into quotes\n");
     return;
   }
-  Serial.print("\nConnecting to " + temp_ssid + "...");
+  Serial.flush();
+  Serial.print("\nConnecting to " + temp_ssid + "......");
   if (save) wifiMulti.addAP(temp_ssid.c_str(), temp_pasw.c_str());
   int retry = 0;
   WiFi.begin(temp_ssid.c_str(), temp_pasw.c_str());
@@ -206,9 +202,9 @@ void ESP32WifiCLI::wifiAPConnect(bool save) {
   }
   Serial.println();
   delay(100);
-  // if (wifiValidation() && save) {
-  //   saveNetwork(temp_ssid, temp_pasw);
-  // }
+  if (wifiValidation() && save) {
+    saveNetwork(temp_ssid, temp_pasw);
+  }
 }
 
 bool ESP32WifiCLI::isConfigured() {
@@ -252,6 +248,7 @@ int ESP32WifiCLI::getDefaultAP() {
   return net;
 }
 
+// Get WiFi cli mode from configure.
 String ESP32WifiCLI::getMode() {
   cfg.begin(app_name.c_str(), RO_MODE);
   String mode = cfg.getString("mode", "single");
@@ -259,6 +256,7 @@ String ESP32WifiCLI::getMode() {
   return mode;
 }
 
+// Set mode to configure. It will work in next connection.
 void ESP32WifiCLI::setMode(String mode) {
   cfg.begin(app_name.c_str(), RW_MODE);
   if (mode.equals("single")) {
@@ -295,8 +293,6 @@ void ESP32WifiCLI::reconnect() {
 void ESP32WifiCLI::connect() {
   auto ssid = WiFi.SSID();
   auto status = WiFi.status();
-  my::arduino::defaultStream().printf("WiFi status: %d, connected ssid = %s\n",
-                                      status, ssid);
   if (status == WL_CONNECTED && temp_ssid == ssid) {
     Serial.println("\nWiFi is already connected");
     return;
@@ -306,13 +302,11 @@ void ESP32WifiCLI::connect() {
     delay(1000);
   }
   auto mode = getMode();
-  Serial.printf("wifi mode: %s\n", mode);
   if (mode.equals("single")) {
     if (temp_ssid.length() == 0) {
       Serial.println("\nSSID is empty, please set a valid SSID into quotes\n");
       return;
     }
-    my::arduino::defaultStream().printf("Ap connect");
     if (isSSIDSaved(temp_ssid)) {
       wifiAPConnect(false);
       return;
@@ -383,7 +377,10 @@ void _disconnect(String opts) { wcli.disconnect(); }
 
 void _listNetworks(String opts) { wcli.loadSavedNetworks(false); }
 
-void _wifiStatus(String opts) { wcli.status(); }
+void _wifiStatus(String opts) {
+  Stream& out = ::my::arduino::defaultStream();  // TODO: 可能造成抢占问题
+  wcli.status(out);
+}
 
 void _deleteNetwork(String opts) {
   String ssid = maschinendeck::SerialTerminal::ParseArgument(opts);

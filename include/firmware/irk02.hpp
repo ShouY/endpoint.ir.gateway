@@ -10,21 +10,24 @@
 #include <numeric>
 #include <string>
 
+#include "common.hpp"
+
 namespace my {
 namespace firmware {
 namespace controller {
 
 class IRControllor {
+ public:
   static constexpr char HEADER0 = 0x55;
   static constexpr char HEADER1 = 0xAA;
 
-  static constexpr char CMD_STATUS = 0x01;
+  static constexpr char CMD_GET_STATUS = 0x01;
   static constexpr char CMD_LEARN = 0x02;
   static constexpr char CMD_EMIT = 0x03;
   static constexpr char CMD_BAUD = 0x04;
   static constexpr char CMD_INVALID = 0x04;
 
-  static constexpr char KEY_INVALID = 48;
+  static constexpr char MIN_INVALID_KEY = 48;
 
   static constexpr char BAUD002400 = 0x00;
   static constexpr char BAUD004800 = 0x01;
@@ -36,6 +39,11 @@ class IRControllor {
   // 响应信息在返回报文中的起始位置偏移
   static constexpr uint8_t RESPONSE_OFFSET = 3;
   static constexpr char CMD_SUCCESS = 0x01;
+
+  static constexpr uint8_t STATUS_IDLE = 0;
+  static constexpr uint8_t STATUS_USED = 1;
+  static constexpr uint8_t STATUS_FAILED = 2;
+  static constexpr uint8_t STATUS_INVALID_KEY = 3;
 
  public:
   IRControllor(Print* logger = nullptr) : retry_times_(2), logger_(logger) {}
@@ -51,35 +59,37 @@ class IRControllor {
   }
 
   // 查看key是否已经占用
-  bool status(int key) {
-    if (key >= KEY_INVALID) {
-      return false;
+  uint8_t status(int key) {
+    if (key >= MIN_INVALID_KEY) {
+      return STATUS_INVALID_KEY;
     }
-    auto respLen = sendCmd(CMD_STATUS, 0x00);
+    auto respLen = sendCmd(CMD_GET_STATUS, 0x00);
     Serial.printf("status resp len=%d\n", respLen);
     if (respLen != 8) {
-      return false;
+      return STATUS_FAILED;
     }
     auto s = recv_buf_[RESPONSE_OFFSET + 8 - key / 8];
     key %= 8;
-    return bitRead(s, key);
+    return bitRead(s, key);  // STATUS_IDLE or STATUS_USED
   }
 
  private:
   bool validCode(uint8_t code) const noexcept { return code < 48; }
 
+  // Send command to ir controller. Return zero or positive if success, and
+  // negative if failed.
   int sendCmd(char operate, char key) {
     size_t cmd_len;  // 命令的长度
     // check
     switch (operate) {
       case CMD_LEARN:
       case CMD_EMIT:
-        if (uint8_t(key) >= KEY_INVALID) {
+        if (uint8_t(key) >= MIN_INVALID_KEY) {
           return -1;
         }
         cmd_len = 5;
         break;
-      case CMD_STATUS:
+      case CMD_GET_STATUS:
         cmd_len = 4;
         key = 0x00;
         break;
@@ -101,6 +111,13 @@ class IRControllor {
     Serial1.setTimeout(200);
     for (int i = 0; i < retry_times_; ++i) {
       auto sendLen = Serial1.write(cmd, cmd_len);
+      {
+        arduino::defaultStream().printf("send command: [%d]", sendLen);
+        for (auto c : std::string(cmd, sendLen)) {
+          arduino::defaultStream().printf("%02X.", uint8_t(c));
+        }
+        arduino::defaultStream().println();
+      }
       if (sendLen == cmd_len) {
         break;
       }
@@ -111,7 +128,7 @@ class IRControllor {
     {
       int recv_timeout_ms = 1000;
       int len = 5;
-      if (operate == CMD_STATUS) {
+      if (operate == CMD_GET_STATUS) {
         recv_timeout_ms = 20500;  // 学习有20s的超时时间
         len = 12;
       }
@@ -120,6 +137,13 @@ class IRControllor {
       char* buf_end = recv_buf_;
       // for (int i = 0; expect_len && i < retry_times_; ++i) {
       auto recv_len = Serial1.readBytes(buf_end, len);
+      {
+        arduino::defaultStream().printf("read command: [%d]", recv_len);
+        for (auto c : std::string(buf_end, recv_len)) {
+          arduino::defaultStream().printf("%02x.", uint8_t(c));
+        }
+        arduino::defaultStream().println();
+      }
       buf_end += recv_len;
       len -= recv_len;
       // }
@@ -143,7 +167,7 @@ class IRControllor {
   int retry_times_;
   Print* logger_;
   char recv_buf_[12];
-  String key_names_[KEY_INVALID];
+  String key_names_[MIN_INVALID_KEY];
 };
 
 }  // namespace controller

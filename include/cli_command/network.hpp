@@ -8,11 +8,7 @@ namespace my {
 namespace arduino {
 namespace terminal_command {
 
-void netstat(String opt) {
-  wcli.begin(&defaultStream());
-  wcli.status();
-  wcli.begin(nullptr);
-}
+void netstat(String opt) { wcli.status(defaultStream()); }
 
 }  // namespace terminal_command
 }  // namespace arduino

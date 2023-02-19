@@ -7,20 +7,22 @@ namespace arduino {
 
 Stream& defaultStream() { return Serial; }
 
-void connectDefaultNetwork(Stream& stream) {
+void initNetwork(Stream& stream) {
+  String ssid("LINK_0BFD");
+  String passwd("qwertyui");
   wcli.begin(nullptr);
-  stream.printf("network begin\n");
-  wcli.setSSID("LINK_0BFD");
-  wcli.setPASW("qwertyui");
-
-  stream.printf("network start connect\n");
+  wcli.setSSID(ssid);
+  wcli.setPASW(passwd);
+  stream.printf("network start connect to \"%s\"\n", ssid);
   wcli.connect();
-  stream.printf("network end connect, success = %d\n",
-                WiFi.status() == WL_CONNECTED);
-  // wcli.begin(nullptr);
-
-  auto status = WiFi.status();
-  stream.printf("WiFi status = %d\n", status);
+  bool isConnected = WiFi.status() == WL_CONNECTED;
+  if (isConnected) {
+    stream.printf("WiFi connect to %s success\n", ssid);
+    wcli.printWifiStatus(stream);
+    stream.printf("=================================\n\n");
+  } else {
+    stream.printf("WiFi connect to %s failed\n", ssid);
+  }
 }
 
 }  // namespace arduino

@@ -12,8 +12,11 @@ static typename firmware::controller::IRControllor IRCtrl;
 
 void remote_emit(String opts) {
   auto key = opts.toInt();
+  if (key >= ::my::firmware::controller::IRControllor::MIN_INVALID_KEY) {
+    Serial.printf("Emit failed, key %d is out of range\n", key);
+  }
   auto success = IRCtrl.emit(key);
-  Serial.printf("Emit %d >> %d", key, success);
+  Serial.printf("Emit %d >> %s", key, success ? "success" : "failed");
 }
 
 void remote_learn(String opts) {

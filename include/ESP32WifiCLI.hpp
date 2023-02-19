@@ -25,19 +25,18 @@ class ESP32WifiCLI {
   void begin(Stream* stream, String app_name = "wifi_cli_prefs");
   void loop();
   void printHelp();
-  void printWifiStatus();
+  void printWifiStatus(Stream& stream);
   void scan();
   void setSSID(String ssid);
   void setPASW(String pasw);
   void connect();
-  void status();
+  void status(Stream& out);
   void list();
   void selectAP(int net);
   void disconnect();
   void reconnect();
   void multiWiFiConnect();
   void setMode(String mode);
-  void wifiAPConnect(bool save);
   bool wifiValidation();
   bool loadAP(int net);
   void deleteNetwork(String ssid);
@@ -56,6 +55,8 @@ class ESP32WifiCLI {
   void setCallback(ESP32WifiCLICallbacks* pcb);
 
  private:
+  void wifiAPConnect(bool save);
+
   maschinendeck::SerialTerminal* term;
 
   String app_name;

@@ -8,7 +8,7 @@ namespace arduino {
 
 Stream& defaultStream();
 
-void connectDefaultNetwork(Stream& stream);
+void initNetwork(Stream& stream);
 
 }  // namespace arduino
 }  // namespace my

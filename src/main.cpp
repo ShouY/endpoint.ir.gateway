@@ -61,8 +61,11 @@ void setup() {
   // 初始化固件
   pinMode(LED_BUILTIN, OUTPUT);
   Serial.begin(115200);
+
   Serial1.begin(9600);
   delay(100);
+
+  Serial.printf("init serial1 success: %d\n", Serial1.availableForWrite());
 
   // Initialize NVS
   esp_err_t err = nvs_flash_init();
@@ -80,7 +83,7 @@ void setup() {
   defaultStream().println("Terminal init finish");
 
   // 默认连接网络
-  connectDefaultNetwork(defaultStream());
+  initNetwork(defaultStream());
 }
 
 void loop() {
