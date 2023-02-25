@@ -67,6 +67,8 @@ void setup() {
 
   Serial.printf("init serial1 success: %d\n", Serial1.availableForWrite());
 
+  my::arduino::terminal_command::IRCtrl.setLogger(&defaultStream());
+
   // Initialize NVS
   esp_err_t err = nvs_flash_init();
   if (err == ESP_ERR_NVS_NO_FREE_PAGES ||

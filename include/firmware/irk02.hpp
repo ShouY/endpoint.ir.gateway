@@ -12,14 +12,16 @@
 
 #include "common.hpp"
 
+#define DEBUG_IR_COMMAND true  // 输出命令调试日志
+
 namespace my {
 namespace firmware {
 namespace controller {
 
 class IRControllor {
  public:
-  static constexpr char HEADER0 = 0x55;
-  static constexpr char HEADER1 = 0xAA;
+  static constexpr char HEADER_PREFIX0 = 0x55;
+  static constexpr char HEADER_PREFIX1 = 0xAA;
 
   static constexpr char CMD_GET_STATUS = 0x01;
   static constexpr char CMD_LEARN = 0x02;
@@ -68,9 +70,28 @@ class IRControllor {
     if (respLen != 8) {
       return STATUS_FAILED;
     }
-    auto s = recv_buf_[RESPONSE_OFFSET + 8 - key / 8];
-    key %= 8;
-    return bitRead(s, key);  // STATUS_IDLE or STATUS_USED
+#ifdef DEBUG_IR_COMMAND
+    if (logger_ != nullptr) {
+      // 总共8字节表示结果，其中前两个字节的值无效，略过
+      constexpr uint8_t STATUS_VALUE_SIZE = 8;
+      for (uint8_t i = 2; i < STATUS_VALUE_SIZE; ++i) {
+        uint8_t value = recv_buf_[RESPONSE_OFFSET + i];
+        for (uint8_t mask = (1 << 7); mask > 0; mask >>= 1) {
+          logger_->print(bool(value & mask));
+        }
+        logger_->print(".");
+      }
+      logger_->println();
+    }
+#endif
+    char valueByte = recv_buf_[RESPONSE_OFFSET + 8 - key / 8];
+    uint8_t bitIndex = key % 8;
+    return bitRead(valueByte, bitIndex);  // STATUS_IDLE or STATUS_USED
+  }
+
+  bool setLogger(Print* out) {
+    this->logger_ = out;
+    return true;
   }
 
  private:
@@ -104,20 +125,21 @@ class IRControllor {
     }
 
     // encode
-    char cmd[6]{HEADER0, HEADER1, operate, key, 0x00, 0x00};
+    char cmd[6]{HEADER_PREFIX0, HEADER_PREFIX1, operate, key, 0x00, 0x00};
     cmd[cmd_len - 1] = std::accumulate(cmd, cmd + cmd_len - 1, uint8_t(0));
 
     // send
-    Serial1.setTimeout(200);
     for (int i = 0; i < retry_times_; ++i) {
       auto sendLen = Serial1.write(cmd, cmd_len);
-      {
-        arduino::defaultStream().printf("send command: [%d]", sendLen);
+#ifdef DEBUG_IR_COMMAND
+      if (logger_ != nullptr) {
+        logger_->printf("send command: [%d][%d]", int(operate), sendLen);
         for (auto c : std::string(cmd, sendLen)) {
-          arduino::defaultStream().printf("%02X.", uint8_t(c));
+          logger_->printf("%02X.", uint8_t(c));
         }
-        arduino::defaultStream().println();
+        logger_->println();
       }
+#endif
       if (sendLen == cmd_len) {
         break;
       }
@@ -137,13 +159,15 @@ class IRControllor {
       char* buf_end = recv_buf_;
       // for (int i = 0; expect_len && i < retry_times_; ++i) {
       auto recv_len = Serial1.readBytes(buf_end, len);
-      {
-        arduino::defaultStream().printf("read command: [%d]", recv_len);
+#ifdef DEBUG_IR_COMMAND
+      if (logger_ != nullptr) {
+        logger_->printf("read command: [][%d]", recv_len);
         for (auto c : std::string(buf_end, recv_len)) {
-          arduino::defaultStream().printf("%02x.", uint8_t(c));
+          logger_->printf("%02X.", uint8_t(c));
         }
-        arduino::defaultStream().println();
+        logger_->println();
       }
+#endif
       buf_end += recv_len;
       len -= recv_len;
       // }

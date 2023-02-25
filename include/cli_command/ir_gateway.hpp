@@ -26,6 +26,19 @@ void remote_learn(String opts) {
 }
 
 void remote_status(String opts) {
+  // check opts
+  if (opts.length() == 0) {
+    Serial.printf("parameters should be a number\n");
+    return;
+  }
+  for (auto c : opts) {
+    if (!isdigit(c)) {
+      Serial.printf("parameters should be a number\n");
+      return;
+    }
+  }
+
+  // parse and response
   auto key = opts.toInt();
   auto used = IRCtrl.status(key);
   Serial.printf("IR Key %d is used: ", key);
