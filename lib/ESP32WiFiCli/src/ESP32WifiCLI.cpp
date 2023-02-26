@@ -1,6 +1,6 @@
 #include "ESP32WifiCLI.hpp"
 
-#include "common.hpp"
+#include <io_manager.hpp>
 
 void ESP32WifiCLI::printWifiStatus(Stream& out) {
   out.print("\nWiFi SSID \t: [");
@@ -177,7 +177,8 @@ void ESP32WifiCLI::disconnect() {
 bool ESP32WifiCLI::wifiValidation() {
   if (WiFi.status() == WL_CONNECTED) {
     if (!silent) {
-      status(::my::arduino::defaultStream());
+      using ::my::arduino::io::defaultStream;
+      status(defaultStream());
     }
     return true;
   } else {
@@ -291,13 +292,18 @@ void ESP32WifiCLI::reconnect() {
 }
 
 void ESP32WifiCLI::connect() {
+  using ::my::arduino::io::defaultStream;
+
   auto ssid = WiFi.SSID();
   auto status = WiFi.status();
+
   if (status == WL_CONNECTED && temp_ssid == ssid) {
-    Serial.println("\nWiFi is already connected");
+    defaultStream().println("\nWiFi is already connected");
     return;
   } else if (status == WL_CONNECTED) {
-    my::arduino::defaultStream().printf("WiFi disconnect\n");
+    using ::my::arduino::io::defaultStream;
+
+    defaultStream().printf("WiFi disconnect\n");
     disconnect();
     delay(1000);
   }
@@ -378,7 +384,8 @@ void _disconnect(String opts) { wcli.disconnect(); }
 void _listNetworks(String opts) { wcli.loadSavedNetworks(false); }
 
 void _wifiStatus(String opts) {
-  Stream& out = ::my::arduino::defaultStream();  // TODO: 可能造成抢占问题
+  using ::my::arduino::io::defaultStream;
+  Stream& out = defaultStream();  // TODO: 可能造成抢占问题
   wcli.status(out);
 }
 

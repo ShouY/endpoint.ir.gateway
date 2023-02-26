@@ -5,8 +5,6 @@
 namespace my {
 namespace arduino {
 
-Stream& defaultStream() { return Serial; }
-
 void initNetwork(Stream& stream) {
   String ssid("LINK_0BFD");
   String passwd("qwertyui");

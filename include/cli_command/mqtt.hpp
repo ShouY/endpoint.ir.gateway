@@ -1,22 +1,20 @@
 #ifndef TERMINAL_COMMAND_NETWORK_HPP
 
-#include <PubSubClient.h>
-#include <WiFiClient.h>
+#include <SerialTerminal.hpp>
+#include <io_manager.hpp>
 
-#include "../common.hpp"
-#include "SerialTerminal.hpp"
+#include "client/mqtt.hpp"
 
 namespace my {
 namespace arduino {
 namespace terminal_command {
 
-static WiFiClient _client;
-static PubSubClient PSCli;
-
 namespace parser {
 
+namespace io = ::my::arduino::io;
+
 int parsePort(String num) {
-  auto& stream = defaultStream();
+  auto& stream = io::defaultStream();
   // stream.printf("Parse %s\n", num.c_str());
   int val = 0;
   for (auto c : num) {
@@ -34,7 +32,7 @@ int parsePort(String num) {
 }  // namespace parser
 
 void mqtt_connect(String opts) {
-  auto& stream = defaultStream();
+  auto& stream = io::defaultStream();
   opts.trim();
   if (opts.length() == 0) {
     stream.println("parameters size error");
@@ -79,20 +77,56 @@ void mqtt_connect(String opts) {
   }
   // set server and client
   stream.printf("MQTT connect to %s:%d\n", address.toString(), port);
-  PSCli.setServer(address, port).setClient(_client);  // client is global object
-  bool connected = PSCli.connect("esp32-ir");
-  stream.printf("MQTT status = %d, connected = %d", PSCli.state(), connected);
+
+  namespace mqtt = my::arduino::client::mqtt;
+  PubSubClient& cli = mqtt::GetMQTTCli();
+  cli.setServer(address, port);  // client is global object
+  bool connected = cli.connect("esp32-ir");
+  stream.printf("MQTT status = %d, connected = %d", cli.state(), connected);
 }
 
 void mqtt_public(String opt) {
-  auto& stream = defaultStream();
-  if (!PSCli.connected()) {
-    auto connected = PSCli.connect(opt.c_str());
+  auto& stream = io::defaultStream();
+
+  namespace mqtt = my::arduino::client::mqtt;
+  PubSubClient& mqtt_cli = mqtt::GetMQTTCli();
+  if (!mqtt_cli.connected()) {
+    // auto connected = MQTTCli.connect(opt.c_str());
     stream.println("PSCli is not connected\n");
     return;
   }
-  auto sent = PSCli.publish("hello", opt.c_str(), opt.length());
+  auto sent = mqtt_cli.publish("hello", opt.c_str(), opt.length());
   stream.printf("PSCli publish topic \"hello\", send result: %d\n", sent);
+}
+
+void mqtt_subscribe_callback(char* topic, byte* payload, unsigned int length) {
+  auto& stream = io::defaultStream();
+  stream.print("Message arrived [");
+  stream.print(topic);
+  stream.print("] ");
+  for (int i = 0; i < length; i++) {
+    stream.print((char)payload[i]);
+  }
+  stream.println();
+}
+
+void mqtt_subscribe(String opts) {
+  auto& stream = io::defaultStream();
+
+  namespace mqtt = my::arduino::client::mqtt;
+  PubSubClient& mqtt_cli = mqtt::GetMQTTCli();
+  if (!mqtt_cli.connected()) {
+    stream.println("PSCli is not connected\n");
+    return;
+  }
+
+  std::string topic("test/ir_gateway");
+  bool success = mqtt_cli.subscribe(topic.c_str());
+  stream.printf("subscribe '%s' %s", topic.c_str(),
+                success ? "success" : "failed");
+  if (success) {
+    mqtt_cli.setCallback(mqtt_subscribe_callback);
+  }
 }
 
 }  // namespace terminal_command

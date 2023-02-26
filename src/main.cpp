@@ -28,11 +28,14 @@
 
 #include <nvs_flash.h>
 
+#include <io_manager.hpp>
+
 #include "SerialTerminal.hpp"
 #include "cli_command/basic.hpp"
 #include "cli_command/ir_gateway.hpp"
 #include "cli_command/mqtt.hpp"
 #include "cli_command/network.hpp"
+#include "mqtt_client.h"
 
 using namespace my::arduino;
 
@@ -54,6 +57,8 @@ void initMainCli() {
                "connect to mqtt server");
   Terminal.add("publish", terminal_command::mqtt_public,
                "publish message to server");
+  Terminal.add("subscribe", terminal_command::mqtt_subscribe,
+               "subscribe a topic");
   Terminal.init(&Serial);
 }
 
@@ -67,6 +72,7 @@ void setup() {
 
   Serial.printf("init serial1 success: %d\n", Serial1.availableForWrite());
 
+  using my::arduino::io::defaultStream;
   my::arduino::terminal_command::IRCtrl.setLogger(&defaultStream());
 
   // Initialize NVS
@@ -86,9 +92,15 @@ void setup() {
 
   // 默认连接网络
   initNetwork(defaultStream());
+
+  // 初始化MQTT
+  my::arduino::client::mqtt::init();
 }
 
 void loop() {
+  // Read MQTT event
+  my::arduino::client::mqtt::GetMQTTCli().loop();
+
   // Terminla loop
   Terminal.loop();
 }

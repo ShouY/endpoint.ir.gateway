@@ -6,7 +6,7 @@
 namespace my {
 namespace arduino {
 
-Stream& defaultStream();
+// Stream& defaultStream();
 
 void initNetwork(Stream& stream);
 
