@@ -21,21 +21,19 @@
 // #define NO_GLOBAL_ESP32WIFICLI
 #define ST_FLAG_NOHELP
 
-#include <Arduino.h>
-#include <WiFi.h>
-
 #define LED_BRIGHTNESS 255
 
+#include <Arduino.h>
+#include <WiFi.h>
 #include <nvs_flash.h>
 
+#include <SerialTerminal.hpp>
 #include <io_manager.hpp>
 
-#include "SerialTerminal.hpp"
 #include "cli_command/basic.hpp"
 #include "cli_command/ir_gateway.hpp"
 #include "cli_command/mqtt.hpp"
 #include "cli_command/network.hpp"
-#include "mqtt_client.h"
 
 using namespace my::arduino;
 

@@ -1,10 +1,9 @@
 #ifndef MY_ARDUINO_TERMINAL_COMMAND_NETWORK_HPP
 #define MY_ARDUINO_TERMINAL_COMMAND_NETWORK_HPP
 
+#include <ESP32WifiCLI.hpp>
+#include <SerialTerminal.hpp>
 #include <io_manager.hpp>
-
-#include "ESP32WifiCLI.hpp"
-#include "SerialTerminal.hpp"
 
 namespace my {
 namespace arduino {

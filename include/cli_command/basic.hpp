@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 
-#include "SerialTerminal.hpp"
+#include <SerialTerminal.hpp>
 
 namespace my {
 namespace arduino {

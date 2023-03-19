@@ -5,8 +5,10 @@
 #include <WiFi.h>
 #include <WiFiMulti.h>
 
-#include "SerialTerminal.hpp"
+#include <SerialTerminal.hpp>
+
 #include "context.hpp"
+
 #define RW_MODE false
 #define RO_MODE true
 

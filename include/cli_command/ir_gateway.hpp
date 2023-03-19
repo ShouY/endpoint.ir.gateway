@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 
-#include "../firmware/irk02.hpp"
+#include "firmware/irk02.hpp"
 
 namespace my {
 namespace arduino {
