@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef MY_CONTEXT_TERMINAL_HPP
+#define MY_CONTEXT_TERMINAL_HPP
+
 #define ST_VERSION "1.1.2"
 
 #include <Arduino.h>
@@ -206,3 +209,5 @@ class SerialTerminal {
 };
 
 }  // namespace maschinendeck
+
+#endif  // MY_CONTEXT_TERMINAL_HPP

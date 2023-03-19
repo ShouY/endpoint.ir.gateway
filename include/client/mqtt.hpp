@@ -1,13 +1,13 @@
-#ifndef MY_ARDUINO_CLIENT_MQTT_HPP
-#define MY_ARDUINO_CLIENT_MQTT_HPP
+#ifndef MY_ARDUINO_MQTT_CLIENT_HPP
+#define MY_ARDUINO_MQTT_CLIENT_HPP
 
 #include <PubSubClient.h>
 #include <WiFiClient.h>
 
 namespace my {
 namespace arduino {
-namespace client {
 namespace mqtt {
+namespace client {
 
 static WiFiClient _mqtt_underlay_client;
 static PubSubClient _MQTT_cli;
@@ -20,9 +20,9 @@ void init() {
 
 PubSubClient& GetMQTTCli() { return _MQTT_cli; }
 
-}  // namespace mqtt
 }  // namespace client
+}  // namespace mqtt
 }  // namespace arduino
 }  // namespace my
 
-#endif MY_ARDUINO_CLIENT_MQTT_HPP
+#endif  // MY_ARDUINO_MQTT_CLIENT_HPP

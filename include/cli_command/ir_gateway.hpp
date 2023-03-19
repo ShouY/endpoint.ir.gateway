@@ -1,5 +1,6 @@
 #ifndef MY_ARDUINO_TERMINAL_COMMAND_IR_GATEWAY_HPP
 #define MY_ARDUINO_TERMINAL_COMMAND_IR_GATEWAY_HPP
+
 #include <Arduino.h>
 
 #include "../firmware/irk02.hpp"
@@ -49,4 +50,4 @@ void remote_status(String opts) {
 }  // namespace arduino
 }  // namespace my
 
-#endif
+#endif  // MY_ARDUINO_TERMINAL_COMMAND_IR_GATEWAY_HPP

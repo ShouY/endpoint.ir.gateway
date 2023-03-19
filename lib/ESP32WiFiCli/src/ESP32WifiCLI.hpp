@@ -79,4 +79,4 @@ class ESP32WifiCLICallbacks {
 extern ESP32WifiCLI wcli;
 #endif
 
-#endif
+#endif  // ESP32WIFICLI_HPP

@@ -94,12 +94,12 @@ void setup() {
   initNetwork(defaultStream());
 
   // 初始化MQTT
-  my::arduino::client::mqtt::init();
+  my::arduino::mqtt::client::init();
 }
 
 void loop() {
   // Read MQTT event
-  my::arduino::client::mqtt::GetMQTTCli().loop();
+  my::arduino::mqtt::client::GetMQTTCli().loop();
 
   // Terminla loop
   Terminal.loop();

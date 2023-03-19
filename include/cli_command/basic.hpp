@@ -1,4 +1,5 @@
 #ifndef MY_TERMINAL_COMMAND_BASIC_HPP
+#define MY_TERMINAL_COMMAND_BASIC_HPP
 
 #include <Arduino.h>
 

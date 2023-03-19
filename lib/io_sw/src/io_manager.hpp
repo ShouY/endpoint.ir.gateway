@@ -1,5 +1,5 @@
-#ifndef MY_ARDUINO_IO_SWITCHER_IO_HPP
-#define MY_ARDUINO_IO_SWITCHER_IO_HPP
+#ifndef MY_ARDUINO_IO_SWITCHER_STREAM_HPP
+#define MY_ARDUINO_IO_SWITCHER_STREAM_HPP
 
 #include <Arduino.h>
 
@@ -13,4 +13,4 @@ extern Stream& defaultStream();
 }  // namespace arduino
 }  // namespace my
 
-#endif MY_ARDUINO_IO_SWITCHER_STREAM_HPP
+#endif  // MY_ARDUINO_IO_SWITCHER_STREAM_HPP

@@ -1,4 +1,5 @@
-#ifndef TERMINAL_COMMAND_NETWORK_HPP
+#ifndef MY_ARDUINO_TERMINAL_COMMAND_NETWORK_HPP
+#define MY_ARDUINO_TERMINAL_COMMAND_NETWORK_HPP
 
 #include <io_manager.hpp>
 
@@ -18,4 +19,4 @@ void netstat(String opt) {
 }  // namespace arduino
 }  // namespace my
 
-#endif  // TERMINAL_COMMAND_NETWORK_HPP
+#endif  // MY_ARDUINO_TERMINAL_COMMAND_NETWORK_HPP

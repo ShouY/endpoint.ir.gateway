@@ -5,6 +5,9 @@
  *
  */
 
+#ifndef MY_ARDUINO_FIRMWARE_IRK02_HPP
+#define MY_ARDUINO_FIRMWARE_IRK02_HPP
+
 #include <Arduino.h>
 
 #include <numeric>
@@ -197,3 +200,5 @@ class IRControllor {
 }  // namespace controller
 }  // namespace firmware
 }  // namespace my
+
+#endif  // MY_ARDUINO_FIRMWARE_IRK02_HPP

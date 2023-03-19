@@ -1,4 +1,5 @@
-#ifndef TERMINAL_COMMAND_NETWORK_HPP
+#ifndef MY_ARDUINO_TERMINAL_COMMAND_MQTT_HPP
+#define MY_ARDUINO_TERMINAL_COMMAND_MQTT_HPP
 
 #include <SerialTerminal.hpp>
 #include <io_manager.hpp>
@@ -78,8 +79,8 @@ void mqtt_connect(String opts) {
   // set server and client
   stream.printf("MQTT connect to %s:%d\n", address.toString(), port);
 
-  namespace mqtt = my::arduino::client::mqtt;
-  PubSubClient& cli = mqtt::GetMQTTCli();
+  namespace mqtt_cli = my::arduino::mqtt::client;
+  PubSubClient& cli = mqtt_cli::GetMQTTCli();
   cli.setServer(address, port);  // client is global object
   bool connected = cli.connect("esp32-ir");
   stream.printf("MQTT status = %d, connected = %d", cli.state(), connected);
@@ -88,14 +89,14 @@ void mqtt_connect(String opts) {
 void mqtt_public(String opt) {
   auto& stream = io::defaultStream();
 
-  namespace mqtt = my::arduino::client::mqtt;
-  PubSubClient& mqtt_cli = mqtt::GetMQTTCli();
-  if (!mqtt_cli.connected()) {
+  namespace mqtt_cli = my::arduino::mqtt::client;
+  PubSubClient& cli = mqtt_cli::GetMQTTCli();
+  if (!cli.connected()) {
     // auto connected = MQTTCli.connect(opt.c_str());
     stream.println("PSCli is not connected\n");
     return;
   }
-  auto sent = mqtt_cli.publish("hello", opt.c_str(), opt.length());
+  auto sent = cli.publish("hello", opt.c_str(), opt.length());
   stream.printf("PSCli publish topic \"hello\", send result: %d\n", sent);
 }
 
@@ -113,8 +114,8 @@ void mqtt_subscribe_callback(char* topic, byte* payload, unsigned int length) {
 void mqtt_subscribe(String opts) {
   auto& stream = io::defaultStream();
 
-  namespace mqtt = my::arduino::client::mqtt;
-  PubSubClient& mqtt_cli = mqtt::GetMQTTCli();
+  namespace mqttCli = my::arduino::mqtt::client;
+  PubSubClient& mqtt_cli = mqttCli::GetMQTTCli();
   if (!mqtt_cli.connected()) {
     stream.println("PSCli is not connected\n");
     return;
@@ -133,4 +134,4 @@ void mqtt_subscribe(String opts) {
 }  // namespace arduino
 }  // namespace my
 
-#endif  // TERMINAL_COMMAND_NETWORK_HPP
+#endif  // MY_ARDUINO_TERMINAL_COMMAND_MQTT_HPP
