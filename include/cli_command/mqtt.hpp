@@ -76,14 +76,16 @@ void mqtt_connect(String opts) {
       }
     }
   }
-  // set server and client
   stream.printf("MQTT connect to %s:%d\n", address.toString(), port);
-
   namespace mqtt_cli = my::arduino::mqtt::client;
   PubSubClient& cli = mqtt_cli::GetMQTTCli();
+  // set server and client
   cli.setServer(address, port);  // client is global object
+  cli.setSocketTimeout(5);
+  // bool netConnected = mqtt_cli::_mqtt_underlay_client.connect(address, port);
+  // mqtt_cli::_mqtt_underlay_client.setNoDelay(true);
   bool connected = cli.connect("esp32-ir");
-  stream.printf("MQTT status = %d, connected = %d", cli.state(), connected);
+  stream.printf("MQTT status = %d, connected = %d\n", cli.state(), connected);
 }
 
 void mqtt_public(String opt) {

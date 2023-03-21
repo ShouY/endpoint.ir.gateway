@@ -45,6 +45,7 @@ void initMainCli() {
   Terminal.add("reboot", terminal_command::reboot, "reboot MCU");
   // Terminal.add("blink", terminal_command::blink, "blink onboard LED");
   Terminal.add("netstat", terminal_command::netstat, "show network status");
+  Terminal.add("ping", terminal_command::ping, "ping remote address");
   // Terminal.add("secho1", terminal_command::serialEcho, "echo proxy of
   // serial1");
   Terminal.add("emit", terminal_command::remote_emit, "send IR signal ");
