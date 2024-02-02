@@ -14,24 +14,24 @@ namespace maschinendeck {
 #if not defined ST_FLAG_NOBUILTIN && defined E2END
 #include "EEPROM.h"
 void printEEPROM(String opts) {
-  io_stream->print("offset \t");
+  io->print("offset \t");
   for (uint8_t h = 0; h < 16; h++) {
-    io_stream->print(h, HEX);
-    io_stream->print('\t');
+    io->print(h, HEX);
+    io->print('\t');
   }
-  io_stream->print("\r\n");
+  io->print("\r\n");
   for (uint8_t i = 0; i < (E2END / 16); i++) {
     String line = "";
-    io_stream->print(i * 16, HEX);
-    io_stream->print('\t');
+    io->print(i * 16, HEX);
+    io->print('\t');
     for (uint8_t n = 0; n <= 15; n++) {
       size_t value = EEPROM.read(i * 16 + n);
-      io_stream->print(value, HEX);
-      io_stream->print('\t');
+      io->print(value, HEX);
+      io->print('\t');
       line += static_cast<char>(value);
     }
-    io_stream->print(line);
-    io_stream->print("\r\n");
+    io->print(line);
+    io->print("\r\n");
   }
 }
 #endif
@@ -53,7 +53,7 @@ enum CoroutineStatus {
 
 class SerialTerminal {
  private:
-  Stream* io_stream;
+  Stream* io;
   Command* commands[MAX_TERMINAL_COMMAND_SIZE];
   uint8_t size_;
   bool firstRun;
@@ -62,35 +62,35 @@ class SerialTerminal {
 #ifndef ST_FLAG_NOHELP
   void printCommands() {
     for (uint8_t i = 0; i < this->size_; i++) {
-      io_stream->println("\t" + this->commands[i]->command + "\t" +
+      io->println("\t" + this->commands[i]->command + "\t" +
                          this->commands[i]->description);
     }
 #ifndef ST_FLAG_NOPROMPT
-    io_stream->print("st> ");
+    io->print("st> ");
 #endif
   }
 #endif
 
  public:
   SerialTerminal(Stream* io = nullptr)
-      : io_stream(io), size_(0), firstRun(true), message("") {
+      : io(io), size_(0), firstRun(true), message("") {
 #if not defined ST_FLAG_NOBUILTIN && defined E2END
     this->add("eeprom", &printEEPROM, "prints the contents of EEPROM");
 #endif
 
     // #ifndef ST_FLAG_NOHELP
-    //     if (io_stream) {
-    //       io_stream->print("SerialTerm v" ST_VERSION);
-    //       io_stream->print("\r\n");
-    //       io_stream->println("(C) 2022, MikO - Hpsaturn");
-    //       io_stream->println("  available commands:");
+    //     if (io) {
+    //       io->print("SerialTerm v" ST_VERSION);
+    //       io->print("\r\n");
+    //       io->println("(C) 2022, MikO - Hpsaturn");
+    //       io->println("  available commands:");
     //     }
     // #endif
   }
 
-  void init(Stream* io) { io_stream = io; }
+  void init(Stream* io) { io = io; }
 
-  bool is_open() const { return io_stream && io_stream->availableForWrite(); }
+  bool is_open() const { return io && io->availableForWrite(); }
 
   // Add command to terminal.
   //
@@ -112,7 +112,7 @@ class SerialTerminal {
   uint8_t size() { return this->size_ + 1; }
 
   void loop() {
-    if (io_stream == nullptr) {
+    if (io == nullptr) {
       return;
     }
 #ifndef ST_FLAG_NOHELP
@@ -121,35 +121,35 @@ class SerialTerminal {
       this->printCommands();
     }
 #endif
-    if (!io_stream->available()) return;
+    if (!io->available()) return;
     bool commandComplete = false;
     static CoroutineStatus next_action = CoroutineStatus::iyield;
-    while (io_stream->available()) {
-      char car = io_stream->read();
+    while (io->available()) {
+      char car = io->read();
       switch (car) {
         case char(8):
         case char(127):
           if (this->message.length() > 0) {
-            io_stream->print("\b \b");
+            io->print("\b \b");
             this->message.remove(this->message.length() - 1);
           }
           next_action = CoroutineStatus::iawait;
           break;
         case '\r':
-          io_stream->print("\r\n");
+          io->print("\r\n");
           commandComplete = true;
           // If there are more data on the line, drop a \n, if it is
           // there. Some terminals may send both, giving
           // an extra lineend, if we do not drop it.
-          if (io_stream->available() && io_stream->peek() == '\n') {
-            io_stream->read();
+          if (io->available() && io->peek() == '\n') {
+            io->read();
           }
-          io_stream->flush();
-          io_stream->read();
+          io->flush();
+          io->read();
           next_action = CoroutineStatus::ireturn;
           break;
         default:
-          if (isAscii(car)) io_stream->print(car);
+          if (isAscii(car)) io->print(car);
           next_action = CoroutineStatus::iyield;
       }
       if (next_action == CoroutineStatus::iyield) {
@@ -164,7 +164,7 @@ class SerialTerminal {
     if (!commandComplete) return;
     if (this->message == "") {
 #ifndef ST_FLAG_NOPROMPT
-      io_stream->print("st> ");
+      io->print("st> ");
 #endif
 
       return;
@@ -181,11 +181,11 @@ class SerialTerminal {
       }
     }
     if (!found) {
-      io_stream->print("\n" + command.first);
-      io_stream->println(": command not found");
+      io->print("\n" + command.first);
+      io->println(": command not found");
     }
 #ifndef ST_FLAG_NOPROMPT
-    io_stream->print("\r\nst> ");
+    io->print("\r\nst> ");
 #endif
   }
 

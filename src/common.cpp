@@ -6,7 +6,7 @@ namespace my {
 namespace arduino {
 
 void initNetwork(Stream& stream) {
-  String ssid("LINK_0BFD");
+  String ssid("TP-LINK_0BFD");
   String passwd("qwertyui");
   wcli.begin(nullptr);
   wcli.setSSID(ssid);

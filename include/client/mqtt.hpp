@@ -9,13 +9,18 @@ namespace arduino {
 namespace mqtt {
 namespace client {
 
+namespace underlay {
 static WiFiClient _mqtt_underlay_client;
 static Client& _client = _mqtt_underlay_client;
+}  // namespace underlay
+
 static PubSubClient _MQTT_cli;
 
 constexpr uint16_t MQTT_KEEP_ALIVE = 60;
 
-void init() { _MQTT_cli.setClient(_client).setKeepAlive(MQTT_KEEP_ALIVE); }
+void init() {
+  _MQTT_cli.setClient(underlay::_client).setKeepAlive(MQTT_KEEP_ALIVE);
+}
 
 PubSubClient& GetMQTTCli() { return _MQTT_cli; }
 
